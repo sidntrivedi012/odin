@@ -29,6 +29,19 @@ bot.on("message", msg => {
   //getting message
   var args = msg.text.split(" ");
   const chatId = msg.chat.id;
+
+  //whoareyou script
+  if (args[0] == "/heylisa") {
+    var out =
+      "Hey, I am Lisa. You can interact with me using the following commands:\n";
+    var c1 = "/xkcd - I will send an awesome xkcd script all your way.\n";
+    var c2 = "/chuck - A fun Chuck Norris joke all your way.\n";
+    var c3 =
+      "/chuck <firstname> - A Chuck Norris joke with the named person as the main character.\n";
+    var c4 = "/quote - An inspirational quote all your way.\n";
+    out = out + c1 + c2 + c3 + c4;
+    bot.sendMessage(chatId, out);
+  }
   //chuck norris script
   if (args[0] == "/chuck") {
     if (!args[1]) {
@@ -64,10 +77,10 @@ bot.on("message", msg => {
       .then(function(html) {
         //success!
         var strip = $("#comic > img", html)[0].attribs.src;
-        bot.sendMessage(
-          chatId,
-          " Here is an xkcd strip for ya - https:" + strip
-        );
+        strip = "https:" + strip;
+        console.log(strip);
+
+        bot.sendPhoto(chatId, strip);
       })
       .catch(function(err) {
         //handle error
