@@ -3,8 +3,9 @@ const axios = require("axios");
 const rp = require("request-promise");
 const $ = require("cheerio");
 const quotes = require("./static/quotes.json");
-// replace the value below with the Telegram token you receive from @BotFather
-const token = "891800756:AAEN3xOfEEYIYJ2qjd58AJnYCJss_OoWQXM";
+require("dotenv").config();
+
+const token = process.env.TELEGRAM_API_TOKEN;
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
@@ -25,7 +26,7 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
 // Listen for any kind of message. There are different kinds of
 // messages.
 bot.onText(/\/heylisa/, msg => {
-  //whoareyou script
+  //heylisa script
   var out =
     "Hey, I am Lisa. I am neither related to Apple nor NASA. You can interact with me using the following commands:\n";
   var c1 = "/xkcd - I will send an awesome xkcd script all your way.\n";
@@ -38,7 +39,7 @@ bot.onText(/\/heylisa/, msg => {
 });
 
 bot.on("message", msg => {
-  //getting message
+  //getting message string
   var args = msg.text.split(" ");
   const chatId = msg.chat.id;
 
@@ -91,7 +92,6 @@ bot.on("message", msg => {
         console.log("error");
       });
   }
-  //quote script
   //quote script
   if (args[0] == "/quote") {
     if (!args[1]) {
