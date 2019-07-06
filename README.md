@@ -1,16 +1,17 @@
-#Lisa
+# Lisa
+
 A Funny Telegram Bot [WIP].
 
 Lives at https://t.me/lisajobs_bot
 
-##Setup
+## Setup
 
 - Clone the repository.
 - Run `npm install`.
 - Make a new file named as `.env` and write into it the telegram bot token you receive from the [BotFather](https://t.me/BotFather) as `TELEGRAM_API_TOKEN = XXXXXXXXXXXXXXXXX`.
 - Run `node index.js`.
 
-##Commands
+## Commands
 
 - `/xkcd` - Sends a random xkcd strip.
 - `/chuck` - Sends a Chuck Norris joke.
