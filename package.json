@@ -4,7 +4,7 @@
   "description": "A Telegram Bot",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "now-build": "node index.js"
   },
   "author": "sidntrivedi012",
   "license": "MIT",
@@ -15,5 +15,8 @@
     "node-telegram-bot-api": "^0.30.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.4"
+  },
+  "engines": {
+    "node": "10.x"
   }
 }
