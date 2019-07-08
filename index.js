@@ -68,7 +68,7 @@ bot.onText(/\/heylisa/, msg => {
   //heylisa script
   var out =
     "Hey, I am Lisa. I am neither related to Apple nor NASA. You can interact with me using the following commands:\n";
-  var c0 = "/meetup - Find a list of upcoming meetups in NCR.";
+  var c0 = "/meetup - Find a list of upcoming meetups in NCR.\n";
   var c1 = "/xkcd - I will send an awesome xkcd script all your way.\n";
   var c2 = "/chuck - A fun Chuck Norris joke all your way.\n";
   var c3 =
