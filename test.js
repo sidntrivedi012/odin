@@ -170,14 +170,18 @@ bot.onText(/\/meetups/, msg => {
             var format1 = new Date(events.results[0].time);
             meetup_date = format1.toDateString();
             meetupslist =
+              "Community - " +
               community +
-              " " +
+              "\n" +
+              "Title - " +
               title +
-              " " +
+              "\n" +
+              "Date - " +
               meetup_date +
-              " " +
+              "\n" +
+              "Meetup Link - " +
               meetup_url +
-              "\n";
+              "\n\n";
             final1 = final1.concat(meetupslist);
             console.log("count value = ", count);
 
