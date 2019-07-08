@@ -4,8 +4,47 @@ const rp = require("request-promise");
 const $ = require("cheerio");
 const quotes = require("./static/quotes.json");
 require("dotenv").config();
+var assert = require("assert");
 
-const token = process.env.TELEGRAM_API_TOKEN;
+require("dotenv").config();
+assert(
+  process.env.MEETUP_API_KEY,
+  "MEETUP_KEY variable isn't set on enviroment (use 'set 'MEETUP_KEY=key'' on Windows)"
+);
+var meetupslist;
+var final1 = " list of meetups -";
+var meetup = require("./node_modules/meetup-api/lib/meetup")({
+  key: process.env.MEETUP_API_KEY
+});
+
+var communities = [
+  "ILUG-D",
+  "Golang Gurgaon",
+  "LinuxChix India",
+  "PyData Delhi",
+  "Pydelhi",
+  "Mozilla Delhi/NCR",
+  "GDG New Delhi",
+  "Paytm-Build for India",
+  "JSLovers",
+  "GDG Cloud New Delhi",
+  "React Delhi/NCR"
+];
+let urls = [
+  "ilugdelhi",
+  "Gurgaon-Go-Meetup",
+  "LinuxChix-India-Meetup",
+  "PyDataDelhi",
+  "pydelhi",
+  "Mozilla_Delhi",
+  "GDGNewDelhi",
+  "Paytm-Build-for-India",
+  "jslovers",
+  "gdgcloudnd",
+  "React-Delhi-NCR"
+];
+
+const token = process.env.TELEGRAM_API_TOKENZ;
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
@@ -105,17 +144,50 @@ bot.on("message", msg => {
 });
 
 bot.onText(/\/meetups/, msg => {
-  //list meetups script
-  //groups - ILUG-D, Moz Delhi, GDG New Delhi,
-  var urlnames = [
-    "ilugdelhi",
-    "Gurgaon-Go-Meetup",
-    "LinuxChix-India-Meetup",
-    "PyDataDelhi",
-    "pydelhi",
-    "Mozilla_Delhi",
-    "Paytm-Build-for-India",
-    "GDGNewDelhi"
-  ];
-  console.log(urlnames[0]);
+  var f = 0;
+  var count = 0;
+  for (let i = 0; i < urls.length; i++) {
+    meetup.getEvents(
+      {
+        group_urlname: urls[i]
+      },
+      function(error, events) {
+        if (error) {
+          console.log("No meetups listed.");
+        } else {
+          if (events.results.length == 0) {
+            count++;
+            //console.log(error);
+            //console.log("No upcoming events listed.");
+          } else {
+            count++;
+            community = communities[i];
+            console.log(community);
+
+            title = events.results[0].name;
+            meetup_url = events.results[0].event_url;
+            var format1 = new Date(events.results[0].time);
+            meetup_date = format1.toDateString();
+            meetupslist =
+              community +
+              " " +
+              title +
+              " " +
+              meetup_date +
+              " " +
+              meetup_url +
+              "\n";
+            final1 = final1.concat(meetupslist);
+
+            console.log(i);
+
+            if (count == urls.length - 1) {
+              bot.sendMessage(msg.chat.id, final1);
+              console.log("Done");
+            }
+          }
+        }
+      }
+    );
+  }
 });
