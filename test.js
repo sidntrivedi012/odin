@@ -12,7 +12,7 @@ assert(
   "MEETUP_KEY variable isn't set on enviroment (use 'set 'MEETUP_KEY=key'' on Windows)"
 );
 var meetupslist;
-var final1 = " list of meetups -";
+
 var meetup = require("./node_modules/meetup-api/lib/meetup")({
   key: process.env.MEETUP_API_KEY
 });
@@ -144,8 +144,8 @@ bot.on("message", msg => {
 });
 
 bot.onText(/\/meetups/, msg => {
-  var f = 0;
   var count = 0;
+  var final1 = "";
   for (let i = 0; i < urls.length; i++) {
     meetup.getEvents(
       {
@@ -156,14 +156,15 @@ bot.onText(/\/meetups/, msg => {
           console.log("No meetups listed.");
         } else {
           if (events.results.length == 0) {
-            count++;
-            //console.log(error);
-            //console.log("No upcoming events listed.");
+            count = count + 1;
+            console.log("No upcoming events listed.count =", count);
+            if (count == urls.length) {
+              bot.sendMessage(msg.chat.id, final1);
+              console.log("Done");
+            }
           } else {
-            count++;
+            count = count + 1;
             community = communities[i];
-            console.log(community);
-
             title = events.results[0].name;
             meetup_url = events.results[0].event_url;
             var format1 = new Date(events.results[0].time);
@@ -178,10 +179,9 @@ bot.onText(/\/meetups/, msg => {
               meetup_url +
               "\n";
             final1 = final1.concat(meetupslist);
+            console.log("count value = ", count);
 
-            console.log(i);
-
-            if (count == urls.length - 1) {
+            if (count == urls.length) {
               bot.sendMessage(msg.chat.id, final1);
               console.log("Done");
             }
