@@ -1,7 +1,9 @@
 const Octokit = require("@octokit/rest");
-const octokit = new Octokit();
+require("dotenv").config();
+const octokit = new Octokit({
+  auth: process.env.GITHUB_API_KEY
+});
 var fs = require("fs");
-var repos = [];
 var res = {};
 
 function getLeaderboard() {
@@ -9,11 +11,16 @@ function getLeaderboard() {
     repos.data.forEach(({ name }) => {
       octokit.repos.listCommits({ owner: "osdc", repo: name }).then(commits => {
         commits.data.forEach(commit => {
-          const { committer, author } = commit;
-          console.log(author);
+          console.log(commit.commit.author.name);
         });
       });
     });
   });
 }
 getLeaderboard();
+// fs.readFile("./commits.json", "utf-8", (err, data) => {
+//   var res = JSON.parse(data);
+//   res.data.forEach(commit => {
+//     console.log(commit.commit.author.name);
+//   });
+// });
