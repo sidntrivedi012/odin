@@ -1,8 +1,6 @@
-# Lisa
+# Odin
 
-A Funny Telegram Bot [WIP].
-
-Lives at https://t.me/lisajobs_bot
+A Funny Telegram Bot.
 
 ## Setup
 
