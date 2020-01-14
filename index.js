@@ -144,6 +144,21 @@ bot.on("message", msg => {
   }
 });
 
+bot.on("message", msg => {
+  //welcome greeting
+  if (msg.new_chat_members) {
+    var out = "Welcome ";
+    //mapping usernames to output string from the new users array
+    const welcomemsg = msg.new_chat_members.map(usr => {
+      out = out + " @" + usr.username;
+    });
+    bot.sendMessage(msg.chat.id, out);
+  }
+  if (msg.left_chat_member) {
+    bot.sendMessage(msg.chat.id, "Bye @" + msg.left_chat_member.username);
+  }
+});
+
 bot.onText(/\/meetups/, msg => {
   var count = 0;
   var final1 = "";
