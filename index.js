@@ -64,10 +64,10 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
 
 // Listen for any kind of message. There are different kinds of
 // messages.
-bot.onText(/\/heylisa/, msg => {
-  //heylisa script
+bot.onText(/\/heyodin/, msg => {
+  //heyodin script
   var out =
-    "Hey, I am Lisa. I am neither related to Apple nor NASA. You can interact with me using the following commands:\n";
+    "Hey, I am odin. I am neither related to Apple nor NASA. You can interact with me using the following commands:\n";
   var c0 = "/meetups - Find a list of upcoming meetups in NCR.\n";
   var c1 = "/xkcd - I will send an awesome xkcd script all your way.\n";
   var c2 = "/chuck - A fun Chuck Norris joke all your way.\n";
