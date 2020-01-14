@@ -147,7 +147,7 @@ bot.on("message", msg => {
 bot.on("message", msg => {
   //welcome greeting
   if (msg.new_chat_members) {
-    var out = "Welcome ";
+    let out = "Welcome ";
     //mapping usernames to output string from the new users array
     const welcomemsg = msg.new_chat_members.map(usr => {
       out = out + " @" + usr.username;
