@@ -4,36 +4,10 @@ const rp = require("request-promise");
 const $ = require("cheerio");
 const quotes = require("./static/quotes.json");
 require("dotenv").config();
-var assert = require("assert");
 
-require("dotenv").config();
-assert(
-  process.env.MEETUP_API_KEY,
-  "MEETUP_KEY variable isn't set on enviroment (use 'set 'MEETUP_KEY=key'' on Windows)"
-);
-var meetupslist;
-
-var meetup = require("./node_modules/meetup-api/lib/meetup")({
-  key: process.env.MEETUP_API_KEY
-});
-
-var communities = [
-  "ILUG-D",
-  "Golang Gurgaon",
-  "LinuxChix India",
-  "PyData Delhi",
-  "Pydelhi",
-  "Mozilla Delhi/NCR",
-  "GDG New Delhi",
-  "Paytm-Build for India",
-  "JSLovers",
-  "GDG Cloud New Delhi",
-  "React Delhi/NCR"
-];
-let urls = [
+const meetupurls = [
   "ilugdelhi",
   "Gurgaon-Go-Meetup",
-  "LinuxChix-India-Meetup",
   "PyDataDelhi",
   "pydelhi",
   "Mozilla_Delhi",
@@ -159,55 +133,28 @@ bot.on("message", msg => {
   }
 });
 
-bot.onText(/\/meetups/, msg => {
-  var count = 0;
-  var final1 = "";
-  for (let i = 0; i < urls.length; i++) {
-    meetup.getEvents(
-      {
-        group_urlname: urls[i]
-      },
-      function(error, events) {
-        if (error) {
-          console.log("No meetups listed.");
-        } else {
-          if (events.results.length == 0) {
-            count = count + 1;
-            console.log("No upcoming events listed.count =", count);
-            if (count == urls.length) {
-              bot.sendMessage(msg.chat.id, final1);
-              console.log("Done");
-            }
-          } else {
-            count = count + 1;
-            community = communities[i];
-            title = events.results[0].name;
-            meetup_url = events.results[0].event_url;
-            var format1 = new Date(events.results[0].time);
-            meetup_date = format1.toDateString();
-            meetupslist =
-              "Community - " +
-              community +
-              "\n" +
-              "Title - " +
-              title +
-              "\n" +
-              "Date - " +
-              meetup_date +
-              "\n" +
-              "Meetup Link - " +
-              meetup_url +
-              "\n\n";
-            final1 = final1.concat(meetupslist);
-            console.log("count value = ", count);
-
-            if (count == urls.length) {
-              bot.sendMessage(msg.chat.id, final1);
-              console.log("Done");
-            }
-          }
+bot.onText(/\/meetups/, async msg => {
+  let out = "List of upcoming meetups in Delhi-NCR : ";
+  //array.map is synchronous function which returns an array of unresolved promises so needs promises.all to wait for all the promises to be resolved before we can make use of the resulting Array.
+  const meetuplist = await Promise.all(
+    meetupurls.map(async url => {
+      const meetup = "https://api.meetup.com/" + url + "/events";
+      let res = await axios.get(meetup);
+      if (res["data"][0]) {
+        out1 =
+          "\n\nTitle: " +
+          res["data"][0].name +
+          "\nDate: " +
+          res["data"][0].local_date +
+          "\nCommunity: " +
+          res["data"][0].group.name +
+          "\nLink: " +
+          res["data"][0].link;
+        if (out1) {
+          out = out + out1;
         }
       }
-    );
-  }
+    })
+  );
+  bot.sendMessage(msg.chat.id, out);
 });
