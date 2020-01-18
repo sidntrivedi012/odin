@@ -3,6 +3,8 @@ const axios = require("axios");
 const rp = require("request-promise");
 const $ = require("cheerio");
 const quotes = require("./static/quotes.json");
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 require("dotenv").config();
 
 const meetupurls = [
@@ -157,4 +159,61 @@ bot.onText(/\/meetups/, async msg => {
     })
   );
   bot.sendMessage(msg.chat.id, out);
+});
+
+//Feature to save links and articles
+mongoose.connect("mongodb://localhost:27017/saved");
+const savedSchema = new Schema({
+  ChatID: Number,
+  name: String,
+  content: String
+});
+
+const Saved = mongoose.model("Saved", savedSchema);
+
+bot.on("message", async msg => {
+  //getting message string
+  let args = msg.text.split(" ");
+  const chatId = msg.chat.id;
+
+  //Save a note
+  if (args[0] == "/save") {
+    await Saved.create({
+      ChatID: chatId,
+      name: args[1],
+      content: args.splice(2, args.length).join(" ")
+    });
+    bot.sendMessage(chatId, "Note Saved");
+  }
+  //View saved notes
+  if (args[0] == "/saved") {
+    await Saved.find({ ChatID: chatId }, (err, notes) => {
+      if (err) {
+        console.log(err);
+      }
+      out = "Saved notes are : \n";
+      notes.map(note => {
+        out = out + "#" + note.name + "\n";
+      });
+      bot.sendMessage(chatId, out);
+    });
+  }
+});
+
+//View a specific note
+bot.onText(/^#/, async msg => {
+  //getting message string
+  let args = msg.text.split(" ");
+  const chatId = msg.chat.id;
+  await Saved.find(
+    { ChatID: chatId, name: args[0].replace("#", "") },
+    (err, notes) => {
+      if (err) {
+        console.log(err);
+      }
+      notes.map(note => {
+        bot.sendMessage(chatId, note.content);
+      });
+    }
+  );
 });
