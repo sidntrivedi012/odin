@@ -178,12 +178,19 @@ bot.on("message", async msg => {
 
   //Save a note
   if (args[0] == "/save") {
-    await Saved.create({
-      ChatID: chatId,
-      name: args[1],
-      content: args.splice(2, args.length).join(" ")
+    //Check if note with the same name already exists
+    await Saved.find({ ChatID: chatId, name: args[1] }, async (err, notes) => {
+      if (notes.length == 0) {
+        await Saved.create({
+          ChatID: chatId,
+          name: args[1],
+          content: args.splice(2, args.length).join(" ")
+        });
+        bot.sendMessage(chatId, "Note Saved");
+      } else {
+        bot.sendMessage(chatId, "Note already exists");
+      }
     });
-    bot.sendMessage(chatId, "Note Saved");
   }
   //View saved notes
   if (args[0] == "/saved") {
@@ -191,22 +198,38 @@ bot.on("message", async msg => {
       if (err) {
         console.log(err);
       }
-      out = "Saved notes are : \n";
-      notes.map(note => {
-        out = out + "#" + note.name + "\n";
-      });
-      bot.sendMessage(chatId, out);
+      if (notes.length == 0) {
+        bot.sendMessage(chatId, "No Saved Notes");
+      } else {
+        out = "Saved notes are : \n";
+        notes.map(note => {
+          out = out + "· /" + note.name + "\n";
+        });
+        bot.sendMessage(chatId, out);
+      }
+    });
+  }
+  //Delete saved notes
+  if (args[0] == "/delete") {
+    //Check if note exists
+    await Saved.find({ ChatID: chatId, name: args[1] }, async (err, notes) => {
+      if (notes.length == 0) {
+        bot.sendMessage(chatId, "Note doesn't exist");
+      } else {
+        await Saved.deleteOne({ ChatID: chatId, name: args[1] });
+        bot.sendMessage(chatId, "Note deleted");
+      }
     });
   }
 });
 
 //View a specific note
-bot.onText(/^#/, async msg => {
+bot.onText(/^\//, async msg => {
   //getting message string
   let args = msg.text.split(" ");
   const chatId = msg.chat.id;
   await Saved.find(
-    { ChatID: chatId, name: args[0].replace("#", "") },
+    { ChatID: chatId, name: args[0].replace("/", "") },
     (err, notes) => {
       if (err) {
         console.log(err);
