@@ -190,7 +190,7 @@ bot.on("message", async msg => {
           });
           bot.sendMessage(chatId, "Note Saved");
         } else {
-          bot.sendMessage(chatId, "Note already exists");
+          bot.sendMessage(chatId, "Note with the same name already exists");
         }
       }
     );
