@@ -162,14 +162,14 @@ bot.onText(/\/meetups/, async msg => {
 });
 
 //Feature to save links and articles
-mongoose.connect("mongodb://localhost:27017/saved");
-const savedSchema = new Schema({
+mongoose.connect("mongodb://localhost:27017/Odin_bot");
+const NotesSchema = new Schema({
   ChatID: Number,
   name: String,
   content: String
 });
 
-const Saved = mongoose.model("Saved", savedSchema);
+const SavedNotes = mongoose.model("SavedNote", NotesSchema);
 
 bot.on("message", async msg => {
   //getting message string
@@ -179,22 +179,25 @@ bot.on("message", async msg => {
   //Save a note
   if (args[0] == "/save") {
     //Check if note with the same name already exists
-    await Saved.find({ ChatID: chatId, name: args[1] }, async (err, notes) => {
-      if (notes.length == 0) {
-        await Saved.create({
-          ChatID: chatId,
-          name: args[1],
-          content: args.splice(2, args.length).join(" ")
-        });
-        bot.sendMessage(chatId, "Note Saved");
-      } else {
-        bot.sendMessage(chatId, "Note already exists");
+    await SavedNotes.find(
+      { ChatID: chatId, name: args[1] },
+      async (err, notes) => {
+        if (notes.length == 0) {
+          await SavedNotes.create({
+            ChatID: chatId,
+            name: args[1],
+            content: args.splice(2, args.length).join(" ")
+          });
+          bot.sendMessage(chatId, "Note Saved");
+        } else {
+          bot.sendMessage(chatId, "Note already exists");
+        }
       }
-    });
+    );
   }
   //View saved notes
   if (args[0] == "/saved") {
-    await Saved.find({ ChatID: chatId }, (err, notes) => {
+    await SavedNotes.find({ ChatID: chatId }, (err, notes) => {
       if (err) {
         console.log(err);
       }
@@ -212,14 +215,17 @@ bot.on("message", async msg => {
   //Delete saved notes
   if (args[0] == "/delete") {
     //Check if note exists
-    await Saved.find({ ChatID: chatId, name: args[1] }, async (err, notes) => {
-      if (notes.length == 0) {
-        bot.sendMessage(chatId, "Note doesn't exist");
-      } else {
-        await Saved.deleteOne({ ChatID: chatId, name: args[1] });
-        bot.sendMessage(chatId, "Note deleted");
+    await SavedNotes.find(
+      { ChatID: chatId, name: args[1] },
+      async (err, notes) => {
+        if (notes.length == 0) {
+          bot.sendMessage(chatId, "Note doesn't exist");
+        } else {
+          await SavedNotes.deleteOne({ ChatID: chatId, name: args[1] });
+          bot.sendMessage(chatId, "Note deleted");
+        }
       }
-    });
+    );
   }
 });
 
@@ -228,7 +234,7 @@ bot.onText(/^\//, async msg => {
   //getting message string
   let args = msg.text.split(" ");
   const chatId = msg.chat.id;
-  await Saved.find(
+  await SavedNotes.find(
     { ChatID: chatId, name: args[0].replace("/", "") },
     (err, notes) => {
       if (err) {
