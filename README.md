@@ -6,7 +6,7 @@ A Funny Telegram Bot.
 
 - Clone the repository.
 - Run `npm install`.
-- Make a new file named as `.env` and write into it the telegram bot token you receive from the [BotFather](https://t.me/BotFather) as `TELEGRAM_API_TOKEN = XXXXXXXXXXXXXXXXX` and also get the API from Meetup and save as `MEETUP_API_KEY=XXXXXXXXXXXXXX`.
+- Make a new file named as `.env` and write into it the telegram bot token you receive from the [BotFather](https://t.me/BotFather) as `TELEGRAM_API_TOKEN = XXXXXXXXXXXXXXXXX`.
 - Run `node index.js`.
 
 ## Commands
