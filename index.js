@@ -42,36 +42,36 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
 // messages.
 bot.onText(/\/heylisa/, msg => {
   //heylisa script
-  var out =
+  let out =
     "Hey, I am odin. You can interact with me using the following commands:\n";
-  var c0 = "/meetups - Find a list of upcoming meetups in NCR.\n";
-  var c1 = "/xkcd - I will send an awesome xkcd script all your way.\n";
-  var c2 = "/chuck - A fun Chuck Norris joke all your way.\n";
-  var c3 =
+  let c0 = "/meetups - Find a list of upcoming meetups in NCR.\n";
+  let c1 = "/xkcd - I will send an awesome xkcd script all your way.\n";
+  let c2 = "/chuck - A fun Chuck Norris joke all your way.\n";
+  let c3 =
     "/chuck <firstname> - A Chuck Norris joke with the named person as the main character.\n";
-  var c4 = "/quote - An inspirational quote all your way.\n";
+  let c4 = "/quote - An inspirational quote all your way.\n";
   out = out + c0 + c1 + c2 + c3 + c4;
   bot.sendMessage(msg.chat.id, out);
 });
 
 bot.on("message", msg => {
   //getting message string
-  var args = msg.text.split(" ");
+  let args = msg.text.split(" ");
   const chatId = msg.chat.id;
 
   //chuck norris script
   if (args[0] == "/chuck") {
     if (!args[1]) {
-      var norris = "http://api.icndb.com/jokes/random";
+      let norris = "http://api.icndb.com/jokes/random";
     } else {
-      var norris = "http://api.icndb.com/jokes/random?firstName=" + args[1];
+      let norris = "http://api.icndb.com/jokes/random?firstName=" + args[1];
     }
     // Make a request for a user with a given ID
     axios
       .get(norris)
       .then(function(response) {
         // handle success
-        var joke = response["data"].value.joke;
+        let joke = response["data"].value.joke;
         bot.sendMessage(chatId, joke);
       })
       .catch(function(error) {
@@ -84,16 +84,16 @@ bot.on("message", msg => {
   }
   //xkcd script
   if (args[0] == "/xkcd") {
-    var max = 3000;
-    var min = 0;
-    var index = Math.floor(Math.random() * (+max - +min)) + +min;
+    let max = 3000;
+    let min = 0;
+    let index = Math.floor(Math.random() * (+max - +min)) + +min;
     const url = "https://xkcd.com/" + index;
     console.log(url);
 
     rp(url)
       .then(function(html) {
         //success!
-        var strip = $("#comic > img", html)[0].attribs.src;
+        let strip = $("#comic > img", html)[0].attribs.src;
         strip = "https:" + strip;
         console.log(strip);
 
@@ -111,10 +111,10 @@ bot.on("message", msg => {
   //quote script
   if (args[0] == "/quote") {
     if (!args[1]) {
-      var quoteID = Math.floor(Math.random() * quotes.length);
-      var quote = quotes[quoteID].text;
-      var author = quotes[quoteID].from;
-      var full_quote = quote + "\nBy - " + author;
+      let quoteID = Math.floor(Math.random() * quotes.length);
+      let quote = quotes[quoteID].text;
+      let author = quotes[quoteID].from;
+      let full_quote = quote + "\nBy - " + author;
       bot.sendMessage(chatId, full_quote);
     }
   }
