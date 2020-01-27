@@ -39,28 +39,6 @@ const NewUserSchema = new Schema({
 });
 
 const NewUser = mongoose.model("newuser", NewUserSchema);
-//Adding New Users to database
-bot.on("message", msg => {
-  if (msg.new_chat_members) {
-    const intro = msg.new_chat_members.map(async usr => {
-      let d = new Date();
-      await NewUser.create({
-        ChatID: msg.chat.id,
-        UserName: usr.username,
-        UserId: usr.id,
-        JoinDate: d.getTime(),
-        introduction: false
-      });
-    });
-  }
-});
-//Set Introduction to True
-bot.onText(/^#introduction/, async msg => {
-  await NewUser.updateOne(
-    { ChatID: msg.chat.id, UserId: msg.from.id },
-    { introduction: true }
-  );
-});
 
 bot.on("message", msg => {
   //welcome greeting
@@ -76,7 +54,36 @@ bot.on("message", msg => {
     bot.sendMessage(msg.chat.id, "Bye @" + msg.left_chat_member.username);
   }
 });
-
+//Adding New Users to database
+bot.on("message", msg => {
+  if (msg.new_chat_members) {
+    const intro = msg.new_chat_members.map(async usr => {
+      let d = new Date();
+      await NewUser.create({
+        ChatID: msg.chat.id,
+        UserName: usr.username,
+        UserId: usr.id,
+        JoinDate: d.getTime(),
+        introduction: false
+      });
+    });
+    bot.sendMessage(
+      msg.chat.id,
+      "Kindly introduce yourself. Start your message with #introduction, so that I can verify your introduction. \n If you don't introduce yourself in 24 hours you will be kicked from the group."
+    );
+  }
+});
+//Set Introduction to True
+bot.onText(/^#introduction/, async msg => {
+  await NewUser.updateOne(
+    { ChatID: msg.chat.id, UserId: msg.from.id },
+    { introduction: true }
+  );
+  bot.sendMessage(
+    msg.chat.id,
+    "Hey " + msg.from.username + ", you are now verified. Thanks for joining."
+  );
+});
 // Matches "/echo [whatever]"
 bot.onText(/\/echo (.+)/, (msg, match) => {
   // 'msg' is the received Message from Telegram
@@ -297,6 +304,13 @@ cron.schedule("0 */2 * * *", async () => {
       if (d.getTime() - usr.JoinDate >= DAY) {
         console.log("Kicking user ", usr.UserName);
         bot.kickChatMember(usr.ChatID, usr.UserId);
+      } else if (d.getTime() - usr.JoinDate >= DAY / 2) {
+        bot.sendMessage(
+          usr.ChatID,
+          "WARNING for" +
+            usr.UserName +
+            "\n Introduce yourself within the next 12 hours or you will be kicked"
+        );
       }
     });
   });
