@@ -69,7 +69,7 @@ bot.on("message", msg => {
     });
     bot.sendMessage(
       msg.chat.id,
-      "Kindly introduce yourself. Start your message with #introduction, so that I can verify your introduction. \n If you don't introduce yourself in 24 hours you will be kicked from the group."
+      "Kindly introduce yourself. Start your message with #introduction, so that I can verify your introduction. \nIf you don't introduce yourself in 24 hours you will be kicked from the group."
     );
   }
 });
@@ -307,9 +307,9 @@ cron.schedule("0 */2 * * *", async () => {
       } else if (d.getTime() - usr.JoinDate >= DAY / 2) {
         bot.sendMessage(
           usr.ChatID,
-          "WARNING for" +
+          "WARNING for @" +
             usr.UserName +
-            "\n Introduce yourself within the next 12 hours or you will be kicked"
+            "\nIntroduce yourself within the next 12 hours or you will be kicked"
         );
       }
     });
