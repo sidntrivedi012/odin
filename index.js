@@ -309,7 +309,7 @@ cron.schedule("0 */2 * * *", async () => {
           usr.ChatID,
           "WARNING for @" +
             usr.UserName +
-            "\nIntroduce yourself within the next 12 hours or you will be kicked"
+            "\nKindly introduce yourself within the next 12 hours or you will be kicked"
         );
       }
     });
