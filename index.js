@@ -26,8 +26,11 @@ const token = process.env.TELEGRAM_API_TOKEN;
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
 
+//Establish connection to the database
+mongoose.connect("mongodb://localhost:27017/Odin_bot");
+
 //Introduction check on new chat member
-const UserSchema = new Schema({
+const NewUserSchema = new Schema({
   ChatID: Number,
   UserName: String,
   UserId: String,
@@ -35,13 +38,13 @@ const UserSchema = new Schema({
   introduction: Boolean
 });
 
-const User = mongoose.model("user", UserSchema);
+const NewUser = mongoose.model("newuser", NewUserSchema);
 //Adding New Users to database
 bot.on("message", msg => {
   if (msg.new_chat_members) {
     const intro = msg.new_chat_members.map(async usr => {
       let d = new Date();
-      await User.create({
+      await NewUser.create({
         ChatID: msg.chat.id,
         UserName: usr.username,
         UserId: usr.id,
@@ -53,7 +56,7 @@ bot.on("message", msg => {
 });
 //Set Introduction to True
 bot.onText(/^#introduction/, async msg => {
-  await User.updateOne(
+  await NewUser.updateOne(
     { ChatID: msg.chat.id, UserId: msg.from.id },
     { introduction: true }
   );
@@ -196,7 +199,6 @@ bot.onText(/\/meetups/, async msg => {
 });
 
 //Feature to save links and articles
-mongoose.connect("mongodb://localhost:27017/Odin_bot");
 const NotesSchema = new Schema({
   ChatID: Number,
   name: String,
@@ -282,8 +284,9 @@ bot.onText(/^\//, async msg => {
 });
 
 //Check if new user introduced himself or not
-cron.schedule("* * * * *", async () => {
-  await User.find({ introduction: false }, (err, users) => {
+//Cron Job to carry the check every 2 hour
+cron.schedule("0 */2 * * *", async () => {
+  await NewUser.find({ introduction: false }, (err, users) => {
     if (err) {
       console.log(err);
     }
