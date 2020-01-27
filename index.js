@@ -4,6 +4,7 @@ const rp = require("request-promise");
 const $ = require("cheerio");
 const quotes = require("./static/quotes.json");
 const mongoose = require("mongoose");
+const cron = require("node-cron");
 const Schema = mongoose.Schema;
 require("dotenv").config();
 
@@ -24,6 +25,54 @@ const token = process.env.TELEGRAM_API_TOKEN;
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
+
+//Introduction check on new chat member
+const UserSchema = new Schema({
+  ChatID: Number,
+  UserName: String,
+  UserId: String,
+  JoinDate: Number,
+  introduction: Boolean
+});
+
+const User = mongoose.model("user", UserSchema);
+//Adding New Users to database
+bot.on("message", msg => {
+  if (msg.new_chat_members) {
+    const intro = msg.new_chat_members.map(async usr => {
+      let d = new Date();
+      await User.create({
+        ChatID: msg.chat.id,
+        UserName: usr.username,
+        UserId: usr.id,
+        JoinDate: d.getTime(),
+        introduction: false
+      });
+    });
+  }
+});
+//Set Introduction to True
+bot.onText(/^#introduction/, async msg => {
+  await User.updateOne(
+    { ChatID: msg.chat.id, UserId: msg.from.id },
+    { introduction: true }
+  );
+});
+
+bot.on("message", msg => {
+  //welcome greeting
+  if (msg.new_chat_members) {
+    let out = "Welcome ";
+    //mapping usernames to output string from the new users array
+    const welcomemsg = msg.new_chat_members.map(usr => {
+      out = out + " @" + usr.username;
+    });
+    bot.sendMessage(msg.chat.id, out);
+  }
+  if (msg.left_chat_member) {
+    bot.sendMessage(msg.chat.id, "Bye @" + msg.left_chat_member.username);
+  }
+});
 
 // Matches "/echo [whatever]"
 bot.onText(/\/echo (.+)/, (msg, match) => {
@@ -117,21 +166,6 @@ bot.on("message", msg => {
       let full_quote = quote + "\nBy - " + author;
       bot.sendMessage(chatId, full_quote);
     }
-  }
-});
-
-bot.on("message", msg => {
-  //welcome greeting
-  if (msg.new_chat_members) {
-    let out = "Welcome ";
-    //mapping usernames to output string from the new users array
-    const welcomemsg = msg.new_chat_members.map(usr => {
-      out = out + " @" + usr.username;
-    });
-    bot.sendMessage(msg.chat.id, out);
-  }
-  if (msg.left_chat_member) {
-    bot.sendMessage(msg.chat.id, "Bye @" + msg.left_chat_member.username);
   }
 });
 
@@ -245,4 +279,22 @@ bot.onText(/^\//, async msg => {
       });
     }
   );
+});
+
+//Check if new user introduced himself or not
+cron.schedule("* * * * *", async () => {
+  await User.find({ introduction: false }, (err, users) => {
+    if (err) {
+      console.log(err);
+    }
+    users.map(usr => {
+      console.log(usr);
+      let d = new Date();
+      const DAY = 86400000;
+      if (d.getTime() - usr.JoinDate >= DAY) {
+        console.log("Kicking user ", usr.UserName);
+        bot.kickChatMember(usr.ChatID, usr.UserId);
+      }
+    });
+  });
 });
