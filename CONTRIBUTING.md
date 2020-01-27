@@ -6,6 +6,11 @@ Install [Node.js, NPM](https://nodejs.org/en/download/) and [MongoDB](https://ww
 
 ## Setup Dev
 
+* Fork the repository and clone it your local machine. 
+```shell
+git clone https://github.com/your-username/odin.git
+cd odin/
+``` 
 * Run.
 ```shell
 npm install
