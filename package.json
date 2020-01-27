@@ -16,6 +16,7 @@
     "meetup-api": "^1.4.38",
     "moment": "^2.24.0",
     "mongoose": "^5.8.9",
+    "node-cron": "^2.0.3",
     "node-telegram-bot-api": "^0.30.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.4"

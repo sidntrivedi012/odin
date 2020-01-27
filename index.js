@@ -4,6 +4,7 @@ const rp = require("request-promise");
 const $ = require("cheerio");
 const quotes = require("./static/quotes.json");
 const mongoose = require("mongoose");
+const cron = require("node-cron");
 const Schema = mongoose.Schema;
 require("dotenv").config();
 
@@ -25,6 +26,64 @@ const token = process.env.TELEGRAM_API_TOKEN;
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
 
+//Establish connection to the database
+mongoose.connect("mongodb://localhost:27017/Odin_bot");
+
+//Introduction check on new chat member
+const NewUserSchema = new Schema({
+  ChatID: Number,
+  UserName: String,
+  UserId: String,
+  JoinDate: Number,
+  introduction: Boolean
+});
+
+const NewUser = mongoose.model("newuser", NewUserSchema);
+
+bot.on("message", msg => {
+  //welcome greeting
+  if (msg.new_chat_members) {
+    let out = "Welcome ";
+    //mapping usernames to output string from the new users array
+    const welcomemsg = msg.new_chat_members.map(usr => {
+      out = out + " @" + usr.username;
+    });
+    bot.sendMessage(msg.chat.id, out);
+  }
+  if (msg.left_chat_member) {
+    bot.sendMessage(msg.chat.id, "Bye @" + msg.left_chat_member.username);
+  }
+});
+//Adding New Users to database
+bot.on("message", msg => {
+  if (msg.new_chat_members) {
+    const intro = msg.new_chat_members.map(async usr => {
+      let d = new Date();
+      await NewUser.create({
+        ChatID: msg.chat.id,
+        UserName: usr.username,
+        UserId: usr.id,
+        JoinDate: d.getTime(),
+        introduction: false
+      });
+    });
+    bot.sendMessage(
+      msg.chat.id,
+      "Kindly introduce yourself. Start your message with #introduction, so that I can verify your introduction. \nIf you don't introduce yourself in 24 hours you will be kicked from the group."
+    );
+  }
+});
+//Set Introduction to True
+bot.onText(/^#introduction/, async msg => {
+  await NewUser.updateOne(
+    { ChatID: msg.chat.id, UserId: msg.from.id },
+    { introduction: true }
+  );
+  bot.sendMessage(
+    msg.chat.id,
+    "Hey " + msg.from.username + ", you are now verified. Thanks for joining."
+  );
+});
 // Matches "/echo [whatever]"
 bot.onText(/\/echo (.+)/, (msg, match) => {
   // 'msg' is the received Message from Telegram
@@ -120,21 +179,6 @@ bot.on("message", msg => {
   }
 });
 
-bot.on("message", msg => {
-  //welcome greeting
-  if (msg.new_chat_members) {
-    let out = "Welcome ";
-    //mapping usernames to output string from the new users array
-    const welcomemsg = msg.new_chat_members.map(usr => {
-      out = out + " @" + usr.username;
-    });
-    bot.sendMessage(msg.chat.id, out);
-  }
-  if (msg.left_chat_member) {
-    bot.sendMessage(msg.chat.id, "Bye @" + msg.left_chat_member.username);
-  }
-});
-
 bot.onText(/\/meetups/, async msg => {
   let out = "List of upcoming meetups in Delhi-NCR : ";
   //array.map is synchronous function which returns an array of unresolved promises so needs promises.all to wait for all the promises to be resolved before we can make use of the resulting Array.
@@ -162,7 +206,6 @@ bot.onText(/\/meetups/, async msg => {
 });
 
 //Feature to save links and articles
-mongoose.connect("mongodb://localhost:27017/Odin_bot");
 const NotesSchema = new Schema({
   ChatID: Number,
   name: String,
@@ -245,4 +288,30 @@ bot.onText(/^\//, async msg => {
       });
     }
   );
+});
+
+//Check if new user introduced himself or not
+//Cron Job to carry the check every 2 hour
+cron.schedule("0 */2 * * *", async () => {
+  await NewUser.find({ introduction: false }, (err, users) => {
+    if (err) {
+      console.log(err);
+    }
+    users.map(usr => {
+      console.log(usr);
+      let d = new Date();
+      const DAY = 86400000;
+      if (d.getTime() - usr.JoinDate >= DAY) {
+        console.log("Kicking user ", usr.UserName);
+        bot.kickChatMember(usr.ChatID, usr.UserId);
+      } else if (d.getTime() - usr.JoinDate >= DAY / 2) {
+        bot.sendMessage(
+          usr.ChatID,
+          "WARNING for @" +
+            usr.UserName +
+            "\nKindly introduce yourself within the next 12 hours or you will be kicked"
+        );
+      }
+    });
+  });
 });
