@@ -99,7 +99,7 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
 
 // Listen for any kind of message. There are different kinds of
 // messages.
-bot.onText(/\/heylisa/, msg => {
+bot.onText(/\/(heyodin|start)/, msg => {
   //heylisa script
   let out =
     "Hey, I am odin. You can interact with me using the following commands:\n";
@@ -109,7 +109,10 @@ bot.onText(/\/heylisa/, msg => {
   let c3 =
     "/chuck <firstname> - A Chuck Norris joke with the named person as the main character.\n";
   let c4 = "/quote - An inspirational quote all your way.\n";
-  out = out + c0 + c1 + c2 + c3 + c4;
+  let c5 = "/save <note-name> <note-content> - Saves note to the database.\n";
+  let c6 = "/saved - Sends the list of saved notes from the database.\n";
+  let c7 = "/delete <note-name>` - Deletes note from the database.\n";
+  out = out + c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7;
   bot.sendMessage(msg.chat.id, out);
 });
 
