@@ -11,8 +11,12 @@ A Funny Telegram Bot.
 
 ## Commands
 
+- `/start` or `/heyodin` - Lists all the bot commands available
 - `/meetups` - List all the meetups of open source communities in Delhi NCR.
 - `/xkcd` - Sends a random xkcd strip.
 - `/chuck` - Sends a Chuck Norris joke.
 - `/chuck <first-name>` - Sends a Chuck Norris joke with the firstname as the main character.
 - `/quote` - Sends an inspirational quote.
+- `/save <note-name> <note-content>` - Saves note to the database.
+- `/saved` - Sends the list of saved notes from the database.
+- `/delete <note-name>` - Deletes note from the database.
