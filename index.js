@@ -1,89 +1,22 @@
 const TelegramBot = require("node-telegram-bot-api");
-const axios = require("axios");
-const rp = require("request-promise");
-const $ = require("cheerio");
-const quotes = require("./static/quotes.json");
 const mongoose = require("mongoose");
+const { Notes } = require("./Modules/Notes");
+const chuck = require("./Modules/chuck");
+const greet = require("./Modules/greeting");
+const introduction = require("./Modules/introduction");
+const meetups = require("./Modules/meetups");
+const quote = require("./Modules/quote");
+const xkcd = require("./Modules/xkcd");
 const cron = require("node-cron");
-const Schema = mongoose.Schema;
 require("dotenv").config();
-
-const meetupurls = [
-  "ilugdelhi",
-  "Gurgaon-Go-Meetup",
-  "PyDataDelhi",
-  "pydelhi",
-  "Mozilla_Delhi",
-  "GDGNewDelhi",
-  "Paytm-Build-for-India",
-  "jslovers",
-  "gdgcloudnd",
-  "React-Delhi-NCR"
-];
 
 const token = process.env.TELEGRAM_API_TOKEN;
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
-
 //Establish connection to the database
 mongoose.connect("mongodb://localhost:27017/Odin_bot");
 
-//Introduction check on new chat member
-const NewUserSchema = new Schema({
-  ChatID: Number,
-  UserName: String,
-  UserId: String,
-  JoinDate: Number,
-  introduction: Boolean
-});
-
-const NewUser = mongoose.model("newuser", NewUserSchema);
-
-bot.on("message", msg => {
-  //welcome greeting
-  if (msg.new_chat_members) {
-    let out = "Welcome ";
-    //mapping usernames to output string from the new users array
-    const welcomemsg = msg.new_chat_members.map(usr => {
-      out = out + " @" + usr.username;
-    });
-    bot.sendMessage(msg.chat.id, out);
-  }
-  if (msg.left_chat_member) {
-    bot.sendMessage(msg.chat.id, "Bye @" + msg.left_chat_member.username);
-  }
-});
-//Adding New Users to database
-bot.on("message", msg => {
-  if (msg.new_chat_members) {
-    const intro = msg.new_chat_members.map(async usr => {
-      let d = new Date();
-      await NewUser.create({
-        ChatID: msg.chat.id,
-        UserName: usr.username,
-        UserId: usr.id,
-        JoinDate: d.getTime(),
-        introduction: false
-      });
-    });
-    bot.sendMessage(
-      msg.chat.id,
-      "Kindly introduce yourself. Start your message with #introduction, so that I can verify your introduction. \nIf you don't introduce yourself in 24 hours you will be kicked from the group."
-    );
-  }
-});
-//Set Introduction to True
-bot.onText(/^#introduction/, async msg => {
-  await NewUser.updateOne(
-    { ChatID: msg.chat.id, UserId: msg.from.id },
-    { introduction: true }
-  );
-  bot.sendMessage(
-    msg.chat.id,
-    "Hey " + msg.from.username + ", you are now verified. Thanks for joining."
-  );
-});
 // Matches "/echo [whatever]"
 bot.onText(/\/echo (.+)/, (msg, match) => {
   // 'msg' is the received Message from Telegram
@@ -117,186 +50,21 @@ bot.onText(/\/(heyodin|start)/, msg => {
 });
 
 bot.on("message", msg => {
-  //getting message string
-  let args = msg.text.split(" ");
-  const chatId = msg.chat.id;
-
-  //chuck norris script
-  if (args[0] == "/chuck") {
-    if (!args[1]) {
-      let norris = "http://api.icndb.com/jokes/random";
-    } else {
-      let norris = "http://api.icndb.com/jokes/random?firstName=" + args[1];
-    }
-    // Make a request for a user with a given ID
-    axios
-      .get(norris)
-      .then(function(response) {
-        // handle success
-        let joke = response["data"].value.joke;
-        bot.sendMessage(chatId, joke);
-      })
-      .catch(function(error) {
-        // handle error
-        console.log(error);
-      })
-      .finally(function() {
-        // always executed
-      });
+  greet(bot, msg);
+  introduction(bot, msg);
+  if (msg.text) {
+    chuck(bot, msg);
+    xkcd(bot, msg);
+    quote(bot, msg);
+    meetups(bot, msg);
+    Notes(bot, msg);
   }
-  //xkcd script
-  if (args[0] == "/xkcd") {
-    let max = 3000;
-    let min = 0;
-    let index = Math.floor(Math.random() * (+max - +min)) + +min;
-    const url = "https://xkcd.com/" + index;
-    console.log(url);
-
-    rp(url)
-      .then(function(html) {
-        //success!
-        let strip = $("#comic > img", html)[0].attribs.src;
-        strip = "https:" + strip;
-        console.log(strip);
-
-        bot.sendPhoto(chatId, strip);
-      })
-      .catch(function(err) {
-        //handle error
-        bot.sendPhoto(
-          chatId,
-          "https://imgs.xkcd.com/comics/angular_momentum.jpg"
-        );
-        console.log("error");
-      });
-  }
-  //quote script
-  if (args[0] == "/quote") {
-    if (!args[1]) {
-      let quoteID = Math.floor(Math.random() * quotes.length);
-      let quote = quotes[quoteID].text;
-      let author = quotes[quoteID].from;
-      let full_quote = quote + "\nBy - " + author;
-      bot.sendMessage(chatId, full_quote);
-    }
-  }
-});
-
-bot.onText(/\/meetups/, async msg => {
-  let out = "List of upcoming meetups in Delhi-NCR : ";
-  //array.map is synchronous function which returns an array of unresolved promises so needs promises.all to wait for all the promises to be resolved before we can make use of the resulting Array.
-  const meetuplist = await Promise.all(
-    meetupurls.map(async url => {
-      const meetup = "https://api.meetup.com/" + url + "/events";
-      let res = await axios.get(meetup);
-      if (res["data"][0]) {
-        out1 =
-          "\n\nTitle: " +
-          res["data"][0].name +
-          "\nDate: " +
-          res["data"][0].local_date +
-          "\nCommunity: " +
-          res["data"][0].group.name +
-          "\nLink: " +
-          res["data"][0].link;
-        if (out1) {
-          out = out + out1;
-        }
-      }
-    })
-  );
-  bot.sendMessage(msg.chat.id, out);
-});
-
-//Feature to save links and articles
-const NotesSchema = new Schema({
-  ChatID: Number,
-  name: String,
-  content: String
-});
-
-const SavedNotes = mongoose.model("SavedNote", NotesSchema);
-
-bot.on("message", async msg => {
-  //getting message string
-  let args = msg.text.split(" ");
-  const chatId = msg.chat.id;
-
-  //Save a note
-  if (args[0] == "/save") {
-    //Check if note with the same name already exists
-    await SavedNotes.find(
-      { ChatID: chatId, name: args[1] },
-      async (err, notes) => {
-        if (notes.length == 0) {
-          await SavedNotes.create({
-            ChatID: chatId,
-            name: args[1],
-            content: args.splice(2, args.length).join(" ")
-          });
-          bot.sendMessage(chatId, "Note Saved");
-        } else {
-          bot.sendMessage(chatId, "Note with the same name already exists");
-        }
-      }
-    );
-  }
-  //View saved notes
-  if (args[0] == "/saved") {
-    await SavedNotes.find({ ChatID: chatId }, (err, notes) => {
-      if (err) {
-        console.log(err);
-      }
-      if (notes.length == 0) {
-        bot.sendMessage(chatId, "No Saved Notes");
-      } else {
-        out = "Saved notes are : \n";
-        notes.map(note => {
-          out = out + "· /" + note.name + "\n";
-        });
-        bot.sendMessage(chatId, out);
-      }
-    });
-  }
-  //Delete saved notes
-  if (args[0] == "/delete") {
-    //Check if note exists
-    await SavedNotes.find(
-      { ChatID: chatId, name: args[1] },
-      async (err, notes) => {
-        if (notes.length == 0) {
-          bot.sendMessage(chatId, "Note doesn't exist");
-        } else {
-          await SavedNotes.deleteOne({ ChatID: chatId, name: args[1] });
-          bot.sendMessage(chatId, "Note deleted");
-        }
-      }
-    );
-  }
-});
-
-//View a specific note
-bot.onText(/^\//, async msg => {
-  //getting message string
-  let args = msg.text.split(" ");
-  const chatId = msg.chat.id;
-  await SavedNotes.find(
-    { ChatID: chatId, name: args[0].replace("/", "") },
-    (err, notes) => {
-      if (err) {
-        console.log(err);
-      }
-      notes.map(note => {
-        bot.sendMessage(chatId, note.content);
-      });
-    }
-  );
 });
 
 //Check if new user introduced himself or not
 //Cron Job to carry the check every 2 hour
 cron.schedule("0 */2 * * *", async () => {
-  await NewUser.find({ introduction: false }, (err, users) => {
+  await introduction.NewUser.find({ introduction: false }, (err, users) => {
     if (err) {
       console.log(err);
     }
@@ -318,3 +86,5 @@ cron.schedule("0 */2 * * *", async () => {
     });
   });
 });
+
+bot.on("polling_error", err => console.log(err));
