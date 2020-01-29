@@ -1,5 +1,7 @@
 # Odin
 
+[![GitHub license](https://img.shields.io/github/license/jenkinsci/plugin-pom)](/LICENSE)
+
 A Funny Telegram Bot.
 
 ## Setup
