@@ -7,6 +7,7 @@ const introduction = require("./Modules/introduction");
 const meetups = require("./Modules/meetups");
 const quote = require("./Modules/quote");
 const xkcd = require("./Modules/xkcd");
+const events = require("./Modules/Events");
 const cron = require("node-cron");
 require("dotenv").config();
 
@@ -58,6 +59,7 @@ bot.on("message", msg => {
     quote(bot, msg);
     meetups(bot, msg);
     Notes(bot, msg);
+    events(bot, msg);
   }
 });
 
