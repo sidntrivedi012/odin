@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-Install [Node.js, NPM](https://nodejs.org/en/download/) and [MongoDB](https://www.mongodb.com/download-center/community)
+Install [Node.js](https://nodejs.org/en/download/), [Yarn](https://legacy.yarnpkg.com/en/docs/install/) and [MongoDB](https://www.mongodb.com/download-center/community)
 
 ## Setup Dev
 
@@ -13,7 +13,7 @@ cd odin/
 ``` 
 * Run.
 ```shell
-npm install
+yarn
 ``` 
 * Make a new file named as `.env` and write into it the telegram bot token you receive from the [BotFather](https://t.me/BotFather) as `TELEGRAM_API_TOKEN = XXXXXXXXXXXXXXXXX`
 * Run.

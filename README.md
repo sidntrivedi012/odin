@@ -7,7 +7,7 @@ A Funny Telegram Bot.
 ## Setup
 
 - Clone the repository.
-- Run `npm install`.
+- Run `yarn`.
 - Make a new file named as `.env` and write into it the telegram bot token you receive from the [BotFather](https://t.me/BotFather) as `TELEGRAM_API_TOKEN = XXXXXXXXXXXXXXXXX`.
 - Run `node index.js`.
 
