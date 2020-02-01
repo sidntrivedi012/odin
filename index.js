@@ -89,4 +89,25 @@ cron.schedule("0 */2 * * *", async () => {
   });
 });
 
+//Check every at 12 for upcoming events
+cron.schedule("0 12 * * *", async () => {
+  await events.db.find({}, (err, event) => {
+    if (err) {
+      console.log(err);
+    }
+    event.map(evt => {
+      let d = new Date();
+      const DAY = 86400000;
+      if (d.getTime() - evt.Date.getMilliseconds() <= DAY) {
+        bot.sendMessage(
+          evt.ChatID,
+          "Meetup on " + evt.Name + "today at " + evt.Venue
+        );
+      } else if (d.getTime() - evt.Date.getMilliseconds() <= 2 * DAY) {
+        bot.sendMessage(evt.ChatID, "Meetup on " + evt.Name + "tomorrow");
+      }
+    });
+  });
+});
+
 bot.on("polling_error", err => console.log(err));
