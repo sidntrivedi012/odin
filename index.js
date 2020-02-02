@@ -96,15 +96,16 @@ cron.schedule("0 12 * * *", async () => {
       console.log(err);
     }
     event.map(evt => {
+      let e = new Date(evt.Date);
       let d = new Date();
       const DAY = 86400000;
-      if (d.getTime() - evt.Date.getMilliseconds() <= DAY) {
+      if (d.getTime() >= e.getTime() && d.getTime() - e.getTime() <= DAY) {
         bot.sendMessage(
           evt.ChatID,
-          "Meetup on " + evt.Name + "today at " + evt.Venue
+          "Meetup on " + evt.Name + " today at " + evt.Venue
         );
-      } else if (d.getTime() - evt.Date.getMilliseconds() <= 2 * DAY) {
-        bot.sendMessage(evt.ChatID, "Meetup on " + evt.Name + "tomorrow");
+      } else if (d.getTime() - e.getTime() <= DAY) {
+        bot.sendMessage(evt.ChatID, "Meetup on " + evt.Name + " tomorrow");
       }
     });
   });
