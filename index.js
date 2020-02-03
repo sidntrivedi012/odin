@@ -7,6 +7,7 @@ const introduction = require("./Modules/introduction");
 const meetups = require("./Modules/meetups");
 const quote = require("./Modules/quote");
 const xkcd = require("./Modules/xkcd");
+const events = require("./Modules/Events");
 const cron = require("node-cron");
 require("dotenv").config();
 
@@ -58,6 +59,7 @@ bot.on("message", msg => {
     quote(bot, msg);
     meetups(bot, msg);
     Notes(bot, msg);
+    events(bot, msg);
   }
 });
 
@@ -82,6 +84,28 @@ cron.schedule("0 */2 * * *", async () => {
             usr.UserName +
             "\nKindly introduce yourself within the next 12 hours or you will be kicked"
         );
+      }
+    });
+  });
+});
+
+//Check every at 12 for upcoming events
+cron.schedule("0 12 * * *", async () => {
+  await events.db.find({}, (err, event) => {
+    if (err) {
+      console.log(err);
+    }
+    event.map(evt => {
+      let e = new Date(evt.Date);
+      let d = new Date();
+      const DAY = 86400000;
+      if (d.getTime() >= e.getTime() && d.getTime() - e.getTime() <= DAY) {
+        bot.sendMessage(
+          evt.ChatID,
+          "Meetup on " + evt.Name + " today at " + evt.Venue
+        );
+      } else if (d.getTime() - e.getTime() <= DAY) {
+        bot.sendMessage(evt.ChatID, "Meetup on " + evt.Name + " tomorrow");
       }
     });
   });
