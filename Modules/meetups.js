@@ -27,6 +27,10 @@ const meetups = async (bot, msg) => {
             res["data"][0].local_date +
             "\nCommunity: " +
             res["data"][0].group.name +
+            "\nVenue: " +
+            res["data"][0].venue.name +
+            ", " + 
+            res["data"][0].venue.city +
             "\nLink: " +
             res["data"][0].link;
           if (out1) {
