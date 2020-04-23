@@ -5,7 +5,4 @@ name = "javascript"
 enabled = true
 
   [analyzers.meta]
-  runtime_env = [
-    "node",
-    "browser"
-  ]
+  runtime_env = ["node"]
