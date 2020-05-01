@@ -8,13 +8,13 @@ A Funny Telegram Bot.
 
 - Clone the repository.
 - Run `yarn`.
-- Make a new file named as `.env` and write into it the telegram bot token you receive from the [BotFather](https://t.me/BotFather) as `TELEGRAM_API_TOKEN = XXXXXXXXXXXXXXXXX`.
+- Make a new file named as `.env` and write into it the telegram bot token you received from the [BotFather](https://t.me/BotFather) as `TELEGRAM_API_TOKEN = XXXXXXXXXXXXXXXXX`.
 - Run `node index.js`.
 
 ## Commands
 
 - `/start` or `/heyodin` - Lists all the bot commands available
-- `/meetups` - List all the meetups of open source communities in Delhi NCR.
+- `/meetups` - Lists all the meetups of open source communities in Delhi NCR.
 - `/xkcd` - Sends a random xkcd strip.
 - `/chuck` - Sends a Chuck Norris joke.
 - `/chuck <first-name>` - Sends a Chuck Norris joke with the firstname as the main character.
